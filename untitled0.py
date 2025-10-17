@@ -10,15 +10,26 @@ Original file is located at
 # =====================================================
 # === 1. Install library ===
 # =====================================================
-!pip install xarray netCDF4 numpy matplotlib cartopy
+import sys, subprocess
 
+# Deteksi apakah dijalankan di luar Google Colab
+if "google.colab" not in sys.modules:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", 
+                           "xarray", "netCDF4", "numpy", "matplotlib", "cartopy"])
+else:
+    # Hanya berjalan di Google Colab
+    !pip install xarray netCDF4 numpy matplotlib cartopy
+
+# =====================================================
+# === 2. Import library ===
+# =====================================================
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
 # =====================================================
-# === 2. Buka file wrfout ===
+# === 3. Buka file wrfout ===
 # =====================================================
 # Upload file NetCDF (misal: wrfout_d01_2024-03-12_00:00:00)
 # atau sesuaikan path di bawah:
@@ -28,14 +39,14 @@ ncfile = '/content/wrfout_d03_2024-03-12_00:00:00'
 ds = xr.open_dataset(ncfile)
 
 # =====================================================
-# === 3. Ambil variabel curah hujan ===
+# === 4. Ambil variabel curah hujan ===
 # =====================================================
 rainc = ds['RAINC']    # Convective rain (mm)
 rainnc = ds['RAINNC']  # Non-convective rain (mm)
 rain_total = rainc + rainnc
 
 # =====================================================
-# === 4. Hitung rain rate (mm/jam) ===
+# === 5. Hitung rain rate (mm/jam) ===
 # =====================================================
 # Ambil selisih antar waktu (mm)
 rain_diff = rain_total.diff(dim='Time')
@@ -52,7 +63,7 @@ rain_rate.name = 'rain_rate'
 rain_rate.attrs['units'] = 'mm/h'
 
 # =====================================================
-# === 5. Plot peta rain rate ===
+# === 6. Plot peta rain rate ===
 # =====================================================
 # Ambil data lat/lon
 lat = ds['XLAT'].isel(Time=0)
@@ -70,7 +81,7 @@ plt.colorbar(p, ax=ax, label='mm/jam')
 plt.show()
 
 # =====================================================
-# === 6. Simpan hasil rain rate ke NetCDF baru ===
+# === 7. Simpan hasil rain rate ke NetCDF baru ===
 # =====================================================
 rain_rate.to_netcdf('/content/rain_rate_wrf.nc')
 print("✅ Rain rate disimpan sebagai rain_rate_wrf.nc")
